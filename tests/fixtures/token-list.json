@@ -1,0 +1,28 @@
+{
+  "metadata": { "queryDate": "2024-01-01T00:00:00Z", "timestamp": 1704067200 },
+  "status": true,
+  "statusCode": 200,
+  "data": [
+    {
+      "id": "solana",
+      "name": "Solana",
+      "symbol": "SOL",
+      "listedMethod": "TGE",
+      "circulatingSupply": 420000000,
+      "marketCap": 42000000000,
+      "maxSupply": null,
+      "totalLockedAmount": 100000000,
+      "tbdLockedAmount": 5000000,
+      "unlockedAmount": 320000000,
+      "untrackedAmount": 0,
+      "hasStandardAllocation": true,
+      "hasFundraising": true,
+      "latestFundraisingRound": "Series A",
+      "hasBurn": false,
+      "hasBuyback": false,
+      "hasCommittedClaim": false,
+      "websiteUrl": "https://solana.com",
+      "lastUpdatedDate": "2024-01-01"
+    }
+  ]
+}

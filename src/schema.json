@@ -1,0 +1,187 @@
+{
+  "name": "tok",
+  "version": "0.1.0",
+  "description": "CLI tool for the Tokenomist API",
+  "globalOptions": {
+    "api-key": { "flags": "-k, --api-key <key>", "description": "API key (overrides env/config)" },
+    "output": { "flags": "-o, --output <format>", "description": "Output format: table, json, csv", "default": "table" },
+    "base-url": { "flags": "--base-url <url>", "description": "API base URL" },
+    "no-cache": { "flags": "--no-cache", "description": "Bypass response cache" }
+  },
+  "commands": {
+    "token list": {
+      "description": "List all tracked tokens with market data",
+      "options": {
+        "token-id": { "flags": "--token-id <ids>", "description": "Filter by token IDs (comma-separated)" }
+      },
+      "example": "tok token list --output json"
+    },
+    "token search <query>": {
+      "description": "Search for tokens by name, symbol, or ID",
+      "arguments": { "query": { "required": true, "description": "Search query string" } },
+      "example": "tok token search bitcoin --output json"
+    },
+    "unlock list": {
+      "description": "List unlock events grouped by token",
+      "options": {
+        "min-market-cap": { "flags": "--min-market-cap <value>", "description": "Minimum market cap" },
+        "min-released-percentage": { "flags": "--min-released-percentage <value>", "description": "Minimum released percentage" },
+        "min-unlock-date": { "flags": "--min-unlock-date <date>", "description": "Min unlock date (YYYY-MM-DD)" },
+        "max-unlock-date": { "flags": "--max-unlock-date <date>", "description": "Max unlock date (YYYY-MM-DD)" },
+        "min-total-unlock-amount": { "flags": "--min-total-unlock-amount <value>", "description": "Minimum total unlock amount" },
+        "min-value-to-market-cap": { "flags": "--min-value-to-market-cap <value>", "description": "Min value-to-market-cap ratio" },
+        "standard-allocation": { "flags": "--standard-allocation <names>", "description": "Filter by allocation (comma-separated)" },
+        "page": { "flags": "--page <number>", "description": "Page number" },
+        "page-size": { "flags": "--page-size <number>", "description": "Items per page" }
+      },
+      "example": "tok unlock list --min-market-cap 1000000"
+    },
+    "unlock upcoming": {
+      "description": "List next upcoming unlock event per token",
+      "options": {
+        "start": { "flags": "--start <date>", "description": "Start date (YYYY-MM-DD)" },
+        "end": { "flags": "--end <date>", "description": "End date (YYYY-MM-DD)" },
+        "standard-allocation": { "flags": "--standard-allocation <names>", "description": "Filter by allocation (comma-separated)" },
+        "min-market-cap": { "flags": "--min-market-cap <value>", "description": "Minimum market cap" },
+        "min-released-percentage": { "flags": "--min-released-percentage <value>", "description": "Minimum released percentage" },
+        "min-total-unlock-amount": { "flags": "--min-total-unlock-amount <value>", "description": "Minimum total unlock amount" },
+        "min-value-to-market-cap": { "flags": "--min-value-to-market-cap <value>", "description": "Min value-to-market-cap ratio" },
+        "page": { "flags": "--page <number>", "description": "Page number" },
+        "page-size": { "flags": "--page-size <number>", "description": "Items per page" }
+      },
+      "example": "tok unlock upcoming --output json"
+    },
+    "unlock events <tokenId>": {
+      "description": "Get unlock events for a specific token",
+      "arguments": { "tokenId": { "required": true, "description": "Token ID (e.g. solana)" } },
+      "options": {
+        "start": { "flags": "--start <date>", "description": "Start date (YYYY-MM-DD)" },
+        "end": { "flags": "--end <date>", "description": "End date (YYYY-MM-DD)" },
+        "standard-allocation": { "flags": "--standard-allocation <names>", "description": "Filter by allocation (comma-separated)" },
+        "page": { "flags": "--page <number>", "description": "Page number" },
+        "page-size": { "flags": "--page-size <number>", "description": "Items per page" }
+      },
+      "example": "tok unlock events solana --start 2024-01-01 --end 2024-12-31"
+    },
+    "investor list": {
+      "description": "List all investors",
+      "options": {
+        "start-latest-funding-date": { "flags": "--start-latest-funding-date <date>", "description": "Start date filter for latest funding (YYYY-MM-DD)" },
+        "end-latest-funding-date": { "flags": "--end-latest-funding-date <date>", "description": "End date filter for latest funding (YYYY-MM-DD)" },
+        "page": { "flags": "--page <number>", "description": "Page number" },
+        "page-size": { "flags": "--page-size <number>", "description": "Items per page" }
+      },
+      "example": "tok investor list --output json"
+    },
+    "investor detail <investorId>": {
+      "description": "Get investor portfolio and funding rounds",
+      "arguments": { "investorId": { "required": true, "description": "Investor ID" } },
+      "options": {
+        "is-lead-investor": { "flags": "--is-lead-investor", "description": "Filter to rounds where investor was lead" },
+        "funding-date-min": { "flags": "--funding-date-min <date>", "description": "Minimum funding date" },
+        "funding-date-max": { "flags": "--funding-date-max <date>", "description": "Maximum funding date" },
+        "raised-amount-min": { "flags": "--raised-amount-min <amount>", "description": "Minimum raised amount" },
+        "raised-amount-max": { "flags": "--raised-amount-max <amount>", "description": "Maximum raised amount" }
+      },
+      "example": "tok investor detail 123 --is-lead-investor"
+    },
+    "fundraising detail <tokenId>": {
+      "description": "Get fundraising data for a specific token",
+      "arguments": { "tokenId": { "required": true, "description": "Token ID" } },
+      "options": {
+        "funding-date-min": { "flags": "--funding-date-min <date>", "description": "Minimum funding date" },
+        "funding-date-max": { "flags": "--funding-date-max <date>", "description": "Maximum funding date" },
+        "raised-amount-min": { "flags": "--raised-amount-min <amount>", "description": "Minimum raised amount" },
+        "raised-amount-max": { "flags": "--raised-amount-max <amount>", "description": "Maximum raised amount" }
+      },
+      "example": "tok fundraising detail uniswap --output json"
+    },
+    "burn list": {
+      "description": "List all tokens with burn data",
+      "options": {
+        "token-id": { "flags": "--token-id <ids>", "description": "Filter by token IDs (comma-separated)" },
+        "page": { "flags": "--page <number>", "description": "Page number" },
+        "page-size": { "flags": "--page-size <number>", "description": "Items per page" }
+      },
+      "example": "tok burn list --output json"
+    },
+    "burn detail <tokenId>": {
+      "description": "Get burn events for a specific token",
+      "arguments": { "tokenId": { "required": true, "description": "Token ID" } },
+      "options": {
+        "start": { "flags": "--start <date>", "description": "Start date" },
+        "end": { "flags": "--end <date>", "description": "End date" }
+      },
+      "example": "tok burn detail solana --start 2024-01-01"
+    },
+    "buyback list": {
+      "description": "List all tokens with buyback data",
+      "options": {
+        "token-id": { "flags": "--token-id <ids>", "description": "Filter by token IDs (comma-separated)" },
+        "page": { "flags": "--page <number>", "description": "Page number" },
+        "page-size": { "flags": "--page-size <number>", "description": "Items per page" }
+      },
+      "example": "tok buyback list --output json"
+    },
+    "buyback detail <tokenId>": {
+      "description": "Get buyback events for a specific token",
+      "arguments": { "tokenId": { "required": true, "description": "Token ID" } },
+      "options": {
+        "start": { "flags": "--start <date>", "description": "Start date" },
+        "end": { "flags": "--end <date>", "description": "End date" }
+      },
+      "example": "tok buyback detail solana --output json"
+    },
+    "emission daily <tokenId>": {
+      "description": "Get daily emission data for a token",
+      "arguments": { "tokenId": { "required": true, "description": "Token ID" } },
+      "options": {
+        "start": { "flags": "--start <date>", "description": "Start date" },
+        "end": { "flags": "--end <date>", "description": "End date" },
+        "standard-allocation": { "flags": "--standard-allocation <names>", "description": "Filter by allocation (comma-separated)" },
+        "page": { "flags": "--page <number>", "description": "Page number" },
+        "page-size": { "flags": "--page-size <number>", "description": "Items per page" }
+      },
+      "example": "tok emission daily arbitrum --start 2024-08-01 --end 2024-08-31"
+    },
+    "emission weekly <tokenId>": {
+      "description": "Get weekly emission data for a token",
+      "arguments": { "tokenId": { "required": true, "description": "Token ID" } },
+      "options": {
+        "start": { "flags": "--start <date>", "description": "Start date" },
+        "end": { "flags": "--end <date>", "description": "End date" },
+        "standard-allocation": { "flags": "--standard-allocation <names>", "description": "Filter by allocation (comma-separated)" },
+        "page": { "flags": "--page <number>", "description": "Page number" },
+        "page-size": { "flags": "--page-size <number>", "description": "Items per page" }
+      },
+      "example": "tok emission weekly arbitrum --start 2024-01-01 --end 2024-06-30"
+    },
+    "allocation detail <tokenId>": {
+      "description": "Get standard allocation data for a specific token",
+      "arguments": { "tokenId": { "required": true, "description": "Token ID" } },
+      "example": "tok allocation detail solana --output json"
+    },
+    "auth login": {
+      "description": "Store API key",
+      "options": {
+        "api-key": { "flags": "--api-key <key>", "description": "API key (prompts if not provided)" }
+      },
+      "example": "tok auth login"
+    },
+    "auth logout": {
+      "description": "Remove stored API key",
+      "example": "tok auth logout"
+    },
+    "auth status": {
+      "description": "Show current auth status",
+      "example": "tok auth status"
+    },
+    "schema": {
+      "description": "Print full command schema as JSON",
+      "options": {
+        "pretty": { "flags": "--pretty", "description": "Pretty-print with 2-space indent" }
+      },
+      "example": "tok schema --pretty"
+    }
+  }
+}

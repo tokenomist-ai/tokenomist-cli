@@ -1,0 +1,8 @@
+{
+  "metadata": { "queryDate": "2024-01-01T00:00:00Z", "timestamp": 1704067200 },
+  "status": false,
+  "statusCode": 401,
+  "data": null,
+  "errorMessage": "Invalid API key",
+  "errorDetail": "The provided API key is not valid"
+}

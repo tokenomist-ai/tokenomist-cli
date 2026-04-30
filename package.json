@@ -1,0 +1,76 @@
+{
+  "name": "@tokenomist-ai/tokenomist-cli",
+  "version": "0.1.2",
+  "description": "CLI tool for the Tokenomist API — query token unlocks, emissions, fundraising, burns, and buybacks from the terminal",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "tok": "dist/index.js"
+  },
+  "scripts": {
+    "postinstall": "node scripts/postinstall.js",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src/ tests/",
+    "lint:fix": "eslint src/ tests/ --fix",
+    "format": "prettier --write 'src/**/*.ts' 'tests/**/*.ts'",
+    "format:check": "prettier --check 'src/**/*.ts' 'tests/**/*.ts'",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "tokenomist",
+    "crypto",
+    "token",
+    "unlock",
+    "emission",
+    "fundraising",
+    "burn",
+    "buyback",
+    "cli",
+    "api"
+  ],
+  "author": {
+    "name": "tokenomist-ai",
+    "email": "support@tokenomist.ai",
+    "url": "https://tokenomist.ai"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tokenomist-ai/tokenomist-cli.git"
+  },
+  "homepage": "https://github.com/tokenomist-ai/tokenomist-cli#readme",
+  "bugs": {
+    "url": "https://github.com/tokenomist-ai/tokenomist-cli/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "skills/**",
+    "scripts/postinstall.js",
+    "LICENSE",
+    "README.md"
+  ],
+  "dependencies": {
+    "cli-table3": "^0.6.5",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "eslint": "^9.16.0",
+    "prettier": "^3.4.2",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.57.0",
+    "vitest": "^3.2.4"
+  }
+}

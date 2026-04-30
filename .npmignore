@@ -1,0 +1,14 @@
+src/
+tests/
+docs/
+.github/
+.claude/
+.env
+.env.local
+coverage/
+tsconfig.json
+tsup.config.ts
+eslint.config.js
+.prettierrc
+*.tsbuildinfo
+.DS_Store
