@@ -1,4 +1,4 @@
-import { ApiError } from "./errors.js";
+import { ApiError, errorHeadline } from "./errors.js";
 
 interface RetryOptions {
   maxAttempts?: number;
@@ -44,7 +44,7 @@ export async function withRetry<T>(fn: () => Promise<T>, options?: RetryOptions)
         : Math.min(calculated, maxDelay);
 
       process.stderr.write(
-        `${err.code}: ${err.message}. Retrying in ${Math.round(delay / 1000)}s... (attempt ${attempt + 1}/${maxAttempts})\n`,
+        `${errorHeadline(err)}. Retrying in ${Math.round(delay / 1000)}s... (attempt ${attempt + 1}/${maxAttempts})\n`,
       );
 
       await sleep(delay);
@@ -52,5 +52,6 @@ export async function withRetry<T>(fn: () => Promise<T>, options?: RetryOptions)
   }
 
   lastError!.retriesExhausted = true;
+  lastError!.attempts = maxAttempts;
   throw lastError;
 }

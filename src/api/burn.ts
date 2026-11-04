@@ -1,4 +1,5 @@
 import type { TokenomistClient } from "./client.js";
+import type { ApiResult } from "../types/response.js";
 import type { BurnTokenList, BurnToken } from "../types/burn.js";
 
 export interface BurnListParams {
@@ -10,8 +11,8 @@ export interface BurnListParams {
 export async function listBurns(
   client: TokenomistClient,
   params?: BurnListParams,
-): Promise<BurnTokenList[]> {
-  return client.get<BurnTokenList[]>("/v5/burn/list", params as Record<string, string>);
+): Promise<ApiResult<BurnTokenList[]>> {
+  return client.getWithMeta<BurnTokenList[]>("/v5/burn/list", { ...params });
 }
 
 export async function getBurnDetail(

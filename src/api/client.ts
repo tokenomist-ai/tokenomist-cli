@@ -1,4 +1,4 @@
-import type { ApiResponse } from "../types/response.js";
+import type { ApiResponse, ApiResult, MetaData } from "../types/response.js";
 import { ApiError } from "./errors.js";
 import { withRetry } from "./retry.js";
 import { ResponseCache } from "./cache.js";
@@ -20,27 +20,36 @@ export class TokenomistClient {
     this.cache = new ResponseCache();
   }
 
-  async get<T>(path: string, params?: Record<string, string>): Promise<T> {
+  /** GET a V5 route and return its `data` only. */
+  async get<T>(path: string, params?: Record<string, string | undefined>): Promise<T> {
+    return (await this.getWithMeta<T>(path, params)).data;
+  }
+
+  /** GET a V5 route and return `data` together with the envelope's `metadata`. */
+  async getWithMeta<T>(
+    path: string,
+    params?: Record<string, string | undefined>,
+  ): Promise<ApiResult<T>> {
     const url = this.buildUrl(path, params);
     const urlStr = url.toString();
     const cacheKey = this.cache.buildKey(urlStr, this.apiKey);
     const useCache = this.options?.noCache !== true;
 
     if (useCache) {
-      const cached = this.cache.get<T>(cacheKey);
-      if (cached) return cached;
+      const cached = this.cache.get<ApiResult<T>>(cacheKey);
+      if (cached && typeof cached === "object" && "metadata" in cached) return cached;
     }
 
-    const data = await withRetry(() => this.fetchFromApi<T>(url));
+    const result = await withRetry(() => this.fetchFromApi<T>(url));
 
     if (useCache) {
-      this.cache.set(cacheKey, urlStr, data);
+      this.cache.set(cacheKey, urlStr, result);
     }
 
-    return data;
+    return result;
   }
 
-  private buildUrl(path: string, params?: Record<string, string>): URL {
+  private buildUrl(path: string, params?: Record<string, string | undefined>): URL {
     const url = new URL(path, this.baseUrl);
     if (params) {
       for (const [key, value] of Object.entries(params)) {
@@ -49,10 +58,12 @@ export class TokenomistClient {
         }
       }
     }
+    // Every V5 handler returns an actionable `errorDetail` when asked.
+    url.searchParams.set("showError", "true");
     return url;
   }
 
-  private async fetchFromApi<T>(url: URL): Promise<T> {
+  private async fetchFromApi<T>(url: URL): Promise<ApiResult<T>> {
     let res: Response;
     try {
       res = await fetch(url.toString(), {
@@ -82,6 +93,9 @@ export class TokenomistClient {
       throw ApiError.fromResponse(200, body);
     }
 
-    return body.data as T;
+    const metadata: MetaData = body.metadata ?? {};
+    // Upstream can send `"data": null` for an empty page.
+    const data = (body.data ?? (metadata.page !== undefined ? [] : null)) as T;
+    return { data, metadata };
   }
 }

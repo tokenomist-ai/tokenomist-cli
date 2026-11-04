@@ -1,10 +1,11 @@
 import { describe, it, expect } from "vitest";
 import schema from "../../src/schema.json" with { type: "json" };
+import pkg from "../../package.json" with { type: "json" };
 
 describe("schema.json", () => {
   it("has name and version", () => {
     expect(schema.name).toBe("tok");
-    expect(schema.version).toBe("0.1.0");
+    expect(schema.version).toBe(pkg.version);
   });
 
   it("has globalOptions", () => {
@@ -31,6 +32,10 @@ describe("schema.json", () => {
     expect(commands).toContain("emission daily <tokenId>");
     expect(commands).toContain("emission weekly <tokenId>");
     expect(commands).toContain("allocation detail <tokenId>");
+    expect(commands).toContain("pit versions <tokenId>");
+    expect(commands).toContain("pit allocation <tokenId>");
+    expect(commands).toContain("pit daily-emission <tokenId>");
+    expect(commands).toContain("pit unlock-events <tokenId>");
     expect(commands).toContain("auth login");
     expect(commands).toContain("auth logout");
     expect(commands).toContain("auth status");

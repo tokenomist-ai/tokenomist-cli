@@ -96,20 +96,23 @@ tok buyback detail aave --start 2024-01-01 --end 2024-12-31 --output json
 
 **Burn list:**
 - `totalBurnAmount` — total tokens burned for this token
+- `totalBurnValue` — USD value of those burns (null if no burn has a price)
 
 **Burn detail:**
 - `burns[].burnDate` — when the burn happened
 - `burns[].amount` — tokens burned
+- `burns[].pricePerToken` / `burns[].value` — price and USD value at the burn
 - `burns[].burnType` — type of burn event
 - `burns[].metadata.burnReasons` — why tokens were burned
 
 **Buyback list:**
 - `totalBuybackAmount` — total tokens bought back
+- `totalBuybackValue` — USD value of those buybacks (null if none has a price)
 
 **Buyback detail:**
 - `buybacks[].buybackDate` — when the buyback happened
 - `buybacks[].tokenAmount` — tokens bought back
-- `buybacks[].value` — USD value of buyback
+- `buybacks[].pricePerToken` / `buybacks[].value` — price and USD value of the buyback
 - `buybacks[].spentAmount` / `spentUnit` — what was spent (e.g. USDC)
 
 ## Analysis workflow
@@ -123,7 +126,8 @@ tok buyback detail aave --start 2024-01-01 --end 2024-12-31 --output json
 
 - A sequential buyback + burn is a **single** deflationary event, not two. Counting both would double-count the supply reduction.
 - Burns from **locked** supply don't reduce circulating supply — they reduce future potential supply instead.
-- The `startDate`/`endDate` filters on burn/buyback detail commands filter by **last activity date**, not the event date range. This is an API quirk — the filters determine which tokens to include based on when they last had activity.
+- `--start`/`--end` on burn/buyback detail keep events dated from `start` 00:00 UTC to `end` 00:00 UTC (an event later on the `end` day is excluded). With either set, the totals are recomputed from the kept events; without them they are all-time.
+- `burn list` / `buyback list` are paginated: the page position is printed to stderr (`Page 1/7 · 125 total`). Raise `--page-size` or walk `--page` to get every token.
 
 ## Workflow
 

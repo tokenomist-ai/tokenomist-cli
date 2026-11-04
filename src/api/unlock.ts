@@ -1,4 +1,5 @@
 import type { TokenomistClient } from "./client.js";
+import type { ApiResult } from "../types/response.js";
 import type { UnlockEventList, UnlockEventListUpcoming, UnlockEventV4 } from "../types/unlock.js";
 
 export interface UnlockListParams {
@@ -36,15 +37,18 @@ export interface UnlockEventsParams {
 export async function listUnlockEvents(
   client: TokenomistClient,
   params?: UnlockListParams,
-): Promise<UnlockEventList[]> {
-  return client.get<UnlockEventList[]>("/v5/unlock/events/list", params as Record<string, string>);
+): Promise<ApiResult<UnlockEventList[]>> {
+  return client.getWithMeta<UnlockEventList[]>(
+    "/v5/unlock/events/list",
+    params as Record<string, string>,
+  );
 }
 
 export async function listUpcomingUnlockEvents(
   client: TokenomistClient,
   params?: UnlockUpcomingParams,
-): Promise<UnlockEventListUpcoming[]> {
-  return client.get<UnlockEventListUpcoming[]>(
+): Promise<ApiResult<UnlockEventListUpcoming[]>> {
+  return client.getWithMeta<UnlockEventListUpcoming[]>(
     "/v5/unlock/events/upcoming",
     params as Record<string, string>,
   );
@@ -54,8 +58,8 @@ export async function getUnlockEvents(
   client: TokenomistClient,
   tokenId: string,
   params?: UnlockEventsParams,
-): Promise<UnlockEventV4[]> {
-  return client.get<UnlockEventV4[]>(
+): Promise<ApiResult<UnlockEventV4[]>> {
+  return client.getWithMeta<UnlockEventV4[]>(
     `/v5/unlock/events/${encodeURIComponent(tokenId)}`,
     params as Record<string, string>,
   );

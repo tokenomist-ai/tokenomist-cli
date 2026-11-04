@@ -1,7 +1,7 @@
 {
   "name": "@tokenomist-ai/tokenomist-cli",
-  "version": "0.1.2",
-  "description": "CLI tool for the Tokenomist API — query token unlocks, emissions, fundraising, burns, and buybacks from the terminal",
+  "version": "0.2.0",
+  "description": "CLI tool for the Tokenomist API — query token unlocks, emissions, fundraising, burns, buybacks, and point-in-time history from the terminal",
   "type": "module",
   "main": "dist/index.js",
   "bin": {

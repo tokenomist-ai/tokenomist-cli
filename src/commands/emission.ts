@@ -4,6 +4,8 @@ import { getDailyEmission, getWeeklyEmission } from "../api/emission.js";
 import { output } from "../output/formatter.js";
 import type { Column } from "../output/table.js";
 import { resolveConfig } from "../config/config.js";
+import { printPaginationHint } from "../output/pagination.js";
+import { validateDateRange } from "./validate.js";
 
 const columns: Column[] = [
   { key: "startDate", header: "Start" },
@@ -32,7 +34,8 @@ emissionCommand
     const client = new TokenomistClient(config.apiKey, config.baseUrl, {
       noCache: config.noCache,
     });
-    const data = await getDailyEmission(client, tokenId, {
+    validateDateRange(opts.start, opts.end);
+    const { data, metadata } = await getDailyEmission(client, tokenId, {
       start: opts.start,
       end: opts.end,
       standardAllocation: opts.standardAllocation,
@@ -40,6 +43,7 @@ emissionCommand
       pageSize: opts.pageSize,
     });
     output(data as unknown as Record<string, unknown>[], columns, globalOpts.output || "table");
+    printPaginationHint(metadata);
   });
 
 emissionCommand
@@ -56,7 +60,8 @@ emissionCommand
     const client = new TokenomistClient(config.apiKey, config.baseUrl, {
       noCache: config.noCache,
     });
-    const data = await getWeeklyEmission(client, tokenId, {
+    validateDateRange(opts.start, opts.end);
+    const { data, metadata } = await getWeeklyEmission(client, tokenId, {
       start: opts.start,
       end: opts.end,
       standardAllocation: opts.standardAllocation,
@@ -64,4 +69,5 @@ emissionCommand
       pageSize: opts.pageSize,
     });
     output(data as unknown as Record<string, unknown>[], columns, globalOpts.output || "table");
+    printPaginationHint(metadata);
   });

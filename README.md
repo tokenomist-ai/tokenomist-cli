@@ -102,6 +102,7 @@ This reads the skill definitions from the local `.agents/skills/` directory inst
 | `tokenomist-fundraising-lookup` | Fundraising rounds, investors, and valuations |
 | `tokenomist-burn-buyback` | Token burn and buyback activity |
 | `tokenomist-allocation-breakdown` | Full allocation distribution for a token |
+| `tokenomist-point-in-time` | Tokenomics as published at a past version (history, audits, backtests) |
 
 ## Usage
 
@@ -155,6 +156,27 @@ tok emission weekly solana --start 2024-01-01 --end 2024-06-30
 tok allocation detail solana
 ```
 
+### Point-in-time history
+A token's data as it was published at a past version. Select the version with `--as-of` (a date or RFC 3339 instant) or `--version-id` (from `pit versions`), not both; omit both for the current version. Point-in-time answers carry no USD fields. Requires a plan with point-in-time access (API, ELITE or TEAM).
+
+```bash
+tok pit versions arbitrum
+tok pit allocation arbitrum --as-of 2024-01-01
+tok pit daily-emission arbitrum --as-of 2024-01-01 --start 2024-03-01 --end 2024-03-31
+tok pit unlock-events arbitrum --version-id <versionId> --output json
+```
+
+With `--output json`, `pit allocation`, `pit daily-emission` and `pit unlock-events` return `{ "asOf", "version", "data", "pagination" }` (`pagination` on the two series commands only); `pit versions` returns `{ "data", "pagination" }`.
+
+### Pagination
+Unlock, emission, investor list, burn list, buyback list, `pit versions` and the `pit` series commands return one page (20 rows by default). The page position is printed to **stderr**, so stdout stays clean for `--output json` / `csv`:
+
+```
+Page 1/2 · 28 total · next: --page 2 (or raise --page-size)
+```
+
+Use `--page` / `--page-size` to get the rest. A page past the last returns the last page again.
+
 ## Global Options
 
 | Option | Description |
@@ -162,6 +184,7 @@ tok allocation detail solana
 | `-k, --api-key <key>` | Override API key |
 | `-o, --output <format>` | Output format: `table` (default), `json`, `csv` |
 | `--base-url <url>` | Override API base URL (default: `https://api.tokenomist.ai`) |
+| `--no-cache` | Bypass the 10-minute response cache |
 | `-V, --version` | Print version |
 | `-h, --help` | Show help |
 

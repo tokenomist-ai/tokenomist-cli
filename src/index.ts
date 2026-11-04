@@ -9,13 +9,16 @@ import { emissionCommand } from "./commands/emission.js";
 import { allocationCommand } from "./commands/allocation.js";
 import { authCommand } from "./commands/auth.js";
 import { schemaCommand } from "./commands/schema.js";
-import { ApiError } from "./api/errors.js";
+import { pitCommand } from "./commands/pit.js";
+import { ApiError, formatApiError } from "./api/errors.js";
 import { printWelcome } from "./banner.js";
+import { updateNotice } from "./update-notice.js";
 import { spawn } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
 import { fileURLToPath } from "node:url";
+import pkg from "../package.json" with { type: "json" };
 
 const ONE_DAY = 24 * 60 * 60 * 1000;
 
@@ -23,12 +26,8 @@ function showUpdateNotification() {
   if (process.env.NO_UPDATE_NOTIFIER === "1" || process.env.CI === "1") return;
   try {
     const raw = readFileSync(join(homedir(), ".tokenomist", "update-check.json"), "utf-8");
-    const data = JSON.parse(raw);
-    if (data.latest !== data.current && Date.now() - data.checkedAt < ONE_DAY) {
-      process.stderr.write(
-        `\nUpdate available: ${data.current} → ${data.latest}  (npm i -g @tokenomist-ai/tokenomist-cli)\n\n`,
-      );
-    }
+    const notice = updateNotice(JSON.parse(raw), pkg.version, Date.now(), ONE_DAY);
+    if (notice) process.stderr.write(notice);
   } catch {
     // No cache file or invalid — skip silently
   }
@@ -58,9 +57,9 @@ const program = new Command();
 program
   .name("tok")
   .description(
-    "CLI tool for the Tokenomist API — query token unlocks, emissions, fundraising, burns, and buybacks",
+    "CLI tool for the Tokenomist API — query token unlocks, emissions, fundraising, burns, buybacks, and point-in-time history",
   )
-  .version("0.1.0")
+  .version(pkg.version)
   .option("-k, --api-key <key>", "API key (overrides env/config)")
   .option("-o, --output <format>", "Output format: table, json, csv", "table")
   .option("--base-url <url>", "API base URL")
@@ -74,6 +73,7 @@ program.addCommand(burnCommand);
 program.addCommand(buybackCommand);
 program.addCommand(emissionCommand);
 program.addCommand(allocationCommand);
+program.addCommand(pitCommand);
 program.addCommand(authCommand);
 program.addCommand(schemaCommand);
 
@@ -91,13 +91,7 @@ program
   })
   .catch((err) => {
     if (err instanceof ApiError) {
-      if (err.retriesExhausted) {
-        // Retry log lines already printed to stderr; just show detail if present
-        if (err.detail) console.error(`Detail: ${err.detail}`);
-      } else {
-        console.error(`${err.code}: ${err.message}`);
-        if (err.detail) console.error(`Detail: ${err.detail}`);
-      }
+      for (const line of formatApiError(err)) console.error(line);
     } else {
       console.error(`Error: ${err instanceof Error ? err.message : String(err)}`);
     }

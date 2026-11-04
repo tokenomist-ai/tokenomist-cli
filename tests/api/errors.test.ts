@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { ApiError, ErrorCode } from "../../src/api/errors.js";
+import { ApiError, ErrorCode, formatApiError } from "../../src/api/errors.js";
 
 describe("ErrorCode", () => {
   it("has all expected codes", () => {
@@ -181,5 +181,78 @@ describe("ApiError.fromNetworkError", () => {
     const err = ApiError.fromNetworkError("string error");
     expect(err.code).toBe(ErrorCode.NETWORK_ERROR);
     expect(err.message).toBe("string error");
+  });
+});
+
+describe("ApiError.fromResponse V5 additions", () => {
+  it("maps 400 to BAD_REQUEST and 422 to VALIDATION_ERROR", () => {
+    expect(ApiError.fromResponse(400, {}).code).toBe(ErrorCode.BAD_REQUEST);
+    expect(ApiError.fromResponse(422, {}).code).toBe(ErrorCode.VALIDATION_ERROR);
+  });
+
+  it("keeps 400/422 non-retryable", () => {
+    expect(ApiError.fromResponse(400, {}).retryable).toBe(false);
+    expect(ApiError.fromResponse(422, {}).retryable).toBe(false);
+  });
+
+  it("reads 422 field errors from data", () => {
+    const err = ApiError.fromResponse(422, {
+      status: false,
+      errorMessage: "Unprocessable Entity",
+      data: [{ key: "query", value: "", message: "query is required" }],
+    });
+    expect(err.fieldErrors).toEqual([{ key: "query", value: "", message: "query is required" }]);
+  });
+
+  it("ignores a non-error data payload", () => {
+    const err = ApiError.fromResponse(500, { data: [1, 2] });
+    expect(err.fieldErrors).toBeUndefined();
+  });
+
+  it("reads errorCode from an HTTP 200 body with status false", () => {
+    const err = ApiError.fromResponse(200, {
+      status: false,
+      statusCode: 403,
+      errorCode: "PLAN_NOT_ELIGIBLE",
+      errorMessage: "Forbidden",
+    });
+    expect(err.code).toBe(ErrorCode.FORBIDDEN);
+    expect(err.errorCode).toBe("PLAN_NOT_ELIGIBLE");
+  });
+});
+
+describe("formatApiError", () => {
+  it("prints code, message and a distinct detail", () => {
+    const err = new ApiError("Bad", ErrorCode.BAD_REQUEST, "Use YYYY-MM-DD", 400);
+    expect(formatApiError(err)).toEqual(["BAD_REQUEST: Bad", "Detail: Use YYYY-MM-DD"]);
+  });
+
+  it("skips a detail that repeats the message", () => {
+    const err = new ApiError("Same", ErrorCode.BAD_REQUEST, "Same", 400);
+    expect(formatApiError(err)).toEqual(["BAD_REQUEST: Same"]);
+  });
+
+  it("includes errorCode, field errors and earliestValidDate", () => {
+    const err = new ApiError("No version", ErrorCode.NOT_FOUND, "detail", 404);
+    err.errorCode = "NO_VERSION_AT_AS_OF";
+    err.earliestValidDate = "2023-03-16T13:08:18Z";
+    err.fieldErrors = [{ key: "start", value: "x", message: "bad date" }];
+    expect(formatApiError(err)).toEqual([
+      "NOT_FOUND (NO_VERSION_AT_AS_OF): No version",
+      "Detail: detail",
+      "  - start: bad date",
+      "Earliest valid date: 2023-03-16T13:08:18Z",
+    ]);
+  });
+
+  it("says it gave up after exhausted retries, with the errorCode", () => {
+    const err = new ApiError("Down", ErrorCode.SERVER_ERROR, "try later", 503);
+    err.errorCode = "SERVICE_UNAVAILABLE";
+    err.retriesExhausted = true;
+    err.attempts = 3;
+    expect(formatApiError(err)).toEqual([
+      "SERVER_ERROR (SERVICE_UNAVAILABLE): Down (gave up after 3 attempts)",
+      "Detail: try later",
+    ]);
   });
 });

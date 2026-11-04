@@ -4,6 +4,8 @@ import { listUnlockEvents, listUpcomingUnlockEvents, getUnlockEvents } from "../
 import { output } from "../output/formatter.js";
 import type { Column } from "../output/table.js";
 import { resolveConfig } from "../config/config.js";
+import { printPaginationHint } from "../output/pagination.js";
+import { validateDateRange } from "./validate.js";
 
 const listColumns: Column[] = [
   { key: "tokenName", header: "Token" },
@@ -73,7 +75,11 @@ addListFilterOptions(
   const client = new TokenomistClient(config.apiKey, config.baseUrl, {
     noCache: config.noCache,
   });
-  const data = await listUnlockEvents(client, {
+  validateDateRange(opts.minUnlockDate, opts.maxUnlockDate, [
+    "--min-unlock-date",
+    "--max-unlock-date",
+  ]);
+  const { data, metadata } = await listUnlockEvents(client, {
     minMarketCap: opts.minMarketCap,
     minReleasedPercentage: opts.minReleasedPercentage,
     minUnlockDate: opts.minUnlockDate,
@@ -89,6 +95,7 @@ addListFilterOptions(
     eventCount: d.events.length,
   }));
   output(rows as unknown as Record<string, unknown>[], listColumns, globalOpts.output || "table");
+  printPaginationHint(metadata);
 });
 
 addUpcomingFilterOptions(
@@ -99,7 +106,8 @@ addUpcomingFilterOptions(
   const client = new TokenomistClient(config.apiKey, config.baseUrl, {
     noCache: config.noCache,
   });
-  const data = await listUpcomingUnlockEvents(client, {
+  validateDateRange(opts.start, opts.end);
+  const { data, metadata } = await listUpcomingUnlockEvents(client, {
     start: opts.start,
     end: opts.end,
     standardAllocation: opts.standardAllocation,
@@ -121,6 +129,7 @@ addUpcomingFilterOptions(
     upcomingColumns,
     globalOpts.output || "table",
   );
+  printPaginationHint(metadata);
 });
 
 addPaginationOptions(
@@ -136,7 +145,8 @@ addPaginationOptions(
   const client = new TokenomistClient(config.apiKey, config.baseUrl, {
     noCache: config.noCache,
   });
-  const data = await getUnlockEvents(client, tokenId, {
+  validateDateRange(opts.start, opts.end);
+  const { data, metadata } = await getUnlockEvents(client, tokenId, {
     start: opts.start,
     end: opts.end,
     standardAllocation: opts.standardAllocation,
@@ -150,4 +160,5 @@ addPaginationOptions(
     valueToMarketCap: d.cliffUnlocks.valueToMarketCap,
   }));
   output(rows as unknown as Record<string, unknown>[], eventsColumns, globalOpts.output || "table");
+  printPaginationHint(metadata);
 });

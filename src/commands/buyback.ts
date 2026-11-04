@@ -4,12 +4,15 @@ import { listBuybacks, getBuybackDetail } from "../api/buyback.js";
 import { output } from "../output/formatter.js";
 import type { Column } from "../output/table.js";
 import { resolveConfig } from "../config/config.js";
+import { printPaginationHint } from "../output/pagination.js";
+import { validateDateRange } from "./validate.js";
 
 const listColumns: Column[] = [
   { key: "tokenId", header: "ID" },
   { key: "tokenName", header: "Name" },
   { key: "tokenSymbol", header: "Symbol" },
   { key: "totalBuybackAmount", header: "Total Buyback", align: "right" },
+  { key: "totalBuybackValue", header: "Total Value (USD)", align: "right" },
 ];
 
 const detailColumns: Column[] = [
@@ -20,6 +23,8 @@ const detailColumns: Column[] = [
   { key: "value", header: "Value", align: "right" },
   { key: "spentAmount", header: "Spent", align: "right" },
   { key: "spentUnit", header: "Unit" },
+  // Added in 0.2.0 — appended so 0.1.x CSV columns keep their positions.
+  { key: "pricePerToken", header: "Price", align: "right" },
 ];
 
 export const buybackCommand = new Command("buyback").description("Token buyback commands");
@@ -36,12 +41,13 @@ buybackCommand
     const client = new TokenomistClient(config.apiKey, config.baseUrl, {
       noCache: config.noCache,
     });
-    const data = await listBuybacks(client, {
+    const { data, metadata } = await listBuybacks(client, {
       tokenId: opts.tokenId,
       page: opts.page,
       pageSize: opts.pageSize,
     });
     output(data as unknown as Record<string, unknown>[], listColumns, globalOpts.output || "table");
+    printPaginationHint(metadata);
   });
 
 buybackCommand
@@ -55,6 +61,7 @@ buybackCommand
     const client = new TokenomistClient(config.apiKey, config.baseUrl, {
       noCache: config.noCache,
     });
+    validateDateRange(opts.start, opts.end);
     const data = await getBuybackDetail(client, tokenId, {
       start: opts.start,
       end: opts.end,
@@ -65,6 +72,10 @@ buybackCommand
     } else {
       console.log(`Token: ${data.tokenName} (${data.tokenSymbol})`);
       console.log(`Total Buyback: ${data.totalBuybackAmount.toLocaleString()}`);
+      // Table only: CSV stdout keeps its 0.1.x preamble.
+      if (outputMode === "table") {
+        console.log(`Total Value (USD): ${data.totalBuybackValue?.toLocaleString() ?? "\u2014"}`);
+      }
       console.log();
       output(data.buybacks as unknown as Record<string, unknown>[], detailColumns, outputMode);
     }

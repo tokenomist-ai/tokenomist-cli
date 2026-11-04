@@ -62,6 +62,7 @@ describe("withRetry", () => {
     const caught = await promise;
     expect(caught).toBeInstanceOf(ApiError);
     expect(caught.retriesExhausted).toBe(true);
+    expect(caught.attempts).toBe(3);
     expect(fn).toHaveBeenCalledTimes(3);
   });
 
@@ -108,6 +109,7 @@ describe("withRetry", () => {
   it("logs retry attempts to stderr", async () => {
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
     const err = new ApiError("fail", ErrorCode.SERVER_ERROR, undefined, 500);
+    err.errorCode = "INTERNAL_ERROR";
     const fn = vi.fn().mockRejectedValueOnce(err).mockResolvedValueOnce("ok");
 
     const promise = withRetry(fn);
@@ -115,7 +117,7 @@ describe("withRetry", () => {
     await promise;
     expect(stderrSpy).toHaveBeenCalled();
     const output = stderrSpy.mock.calls.map((c) => String(c[0])).join("");
-    expect(output).toContain("SERVER_ERROR");
+    expect(output).toContain("SERVER_ERROR (INTERNAL_ERROR): fail. Retrying");
     expect(output).toContain("attempt 2/3");
   });
 });

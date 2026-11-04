@@ -1,4 +1,5 @@
 import type { TokenomistClient } from "./client.js";
+import type { ApiResult } from "../types/response.js";
 import type { BuybackTokenList, BuybackToken } from "../types/buyback.js";
 
 export interface BuybackListParams {
@@ -10,8 +11,8 @@ export interface BuybackListParams {
 export async function listBuybacks(
   client: TokenomistClient,
   params?: BuybackListParams,
-): Promise<BuybackTokenList[]> {
-  return client.get<BuybackTokenList[]>("/v5/buyback/list", params as Record<string, string>);
+): Promise<ApiResult<BuybackTokenList[]>> {
+  return client.getWithMeta<BuybackTokenList[]>("/v5/buyback/list", { ...params });
 }
 
 export async function getBuybackDetail(
