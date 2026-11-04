@@ -20,8 +20,12 @@ export async function getBurnDetail(
   tokenId: string,
   params?: { start?: string; end?: string },
 ): Promise<BurnToken> {
-  return client.get<BurnToken>(
+  const data = await client.get<BurnToken>(
     `/v5/burn/${encodeURIComponent(tokenId)}`,
     params as Record<string, string>,
   );
+  // The API sends a null value when no event matched the range; zero events
+  // are worth zero (as the MCP server reports it).
+  if (!data.burns?.length && data.totalBurnValue == null) data.totalBurnValue = 0;
+  return data;
 }

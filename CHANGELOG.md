@@ -24,6 +24,7 @@
 - `tok --version` and `tok schema` reported `0.1.0` whatever the installed version.
 - An empty page sent as `"data": null` no longer crashes list commands.
 - After the last retry of a 429, 5xx or network error, the CLI now prints a final line (`… (gave up after 3 attempts)`) instead of ending on "Retrying…". Retry lines also show the point-in-time `errorCode`.
+- `burn detail` / `buyback detail` report a total USD value of `0` when no event matches the date range. The API sends `null` there, which showed as `—` next to `Total Burned: 0`.
 - The update notice now shows only when npm has a newer version than the one running. Before, it compared for inequality against the version cached at check time, so it could suggest an older version or name the version you had already upgraded from.
 
 

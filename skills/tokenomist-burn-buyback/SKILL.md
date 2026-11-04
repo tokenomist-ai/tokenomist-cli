@@ -96,7 +96,7 @@ tok buyback detail aave --start 2024-01-01 --end 2024-12-31 --output json
 
 **Burn list:**
 - `totalBurnAmount` — total tokens burned for this token
-- `totalBurnValue` — USD value of those burns (null if no burn has a price)
+- `totalBurnValue` — USD value of those burns (null if no burn has a price; `0` in `burn detail` when no burn is in the range)
 
 **Burn detail:**
 - `burns[].burnDate` — when the burn happened
@@ -107,7 +107,7 @@ tok buyback detail aave --start 2024-01-01 --end 2024-12-31 --output json
 
 **Buyback list:**
 - `totalBuybackAmount` — total tokens bought back
-- `totalBuybackValue` — USD value of those buybacks (null if none has a price)
+- `totalBuybackValue` — USD value of those buybacks (null if none has a price; `0` in `buyback detail` when no buyback is in the range)
 
 **Buyback detail:**
 - `buybacks[].buybackDate` — when the buyback happened

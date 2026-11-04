@@ -164,3 +164,26 @@ describe("0.1.x JSON compatibility: paginated lists stay bare arrays", () => {
     expect(out[0].investorId).toBe("a");
   });
 });
+
+describe("burn/buyback detail with no events in range", () => {
+  it("reports a total value of 0, not null", async () => {
+    respond({ ...BURN, totalBurnAmount: 0, totalBurnValue: null, burns: [] });
+    await run("-o", "json", "burn", "detail", "aptos");
+    expect(JSON.parse(stdout.join("")).totalBurnValue).toBe(0);
+
+    stdout = [];
+    respond({ ...BUYBACK, totalBuybackAmount: 0, totalBuybackValue: null, buybacks: [] });
+    await run("buyback", "detail", "aave");
+    expect(lines()).toContain("Total Value (USD): 0");
+  });
+
+  it("keeps null when events exist but none has a price", async () => {
+    respond({
+      ...BURN,
+      totalBurnValue: null,
+      burns: [{ burnEventLabel: "L", burnType: "T", burnDate: "2026-01-01T00:00:00Z", amount: 5 }],
+    });
+    await run("-o", "json", "burn", "detail", "aptos");
+    expect(JSON.parse(stdout.join("")).totalBurnValue).toBeNull();
+  });
+});
