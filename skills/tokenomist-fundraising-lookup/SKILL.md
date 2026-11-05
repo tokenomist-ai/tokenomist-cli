@@ -80,6 +80,10 @@ tok investor detail andreessen-horowitz --is-lead-investor --output json
 tok investor detail andreessen-horowitz --funding-date-min 2023-01-01 --raised-amount-min 5000000 --output json
 ```
 
+## Pagination
+
+List and series commands return one page (20 rows by default). The page position is printed to **stderr** — e.g. `Page 1/3 · 56 total · next: --page 2` — while stdout stays the JSON/CSV data. To get everything, raise `--page-size` or call again with `--page <n>` until the page equals the total pages. A page past the last returns the last page again, so never stop on "unchanged" data.
+
 ## Key output fields
 
 **Token fundraising:**

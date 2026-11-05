@@ -1,7 +1,11 @@
 {
   "name": "tok",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "CLI tool for the Tokenomist API",
+  "notes": {
+    "pagination": "Paginated commands (unlock list/upcoming/events, emission daily/weekly, investor list, burn list, buyback list, pit versions/daily-emission/unlock-events) return one page (default 20 rows). The page position is printed to stderr as 'Page <page>/<totalPages> · <total> total'; stdout stays the data only. A page past the last returns the last page again. pit commands with --output json include it as a 'pagination' object.",
+    "pointInTime": "pit commands answer from one tokenomics version: --as-of <instant> (YYYY-MM-DD or RFC 3339) or --version-id <id> from 'pit versions', never both; neither means the current version. Their --output json is {asOf, version, data, pagination?}; pit versions returns {data, pagination}. They need a plan with point-in-time access (API, ELITE or TEAM); others get FORBIDDEN (PLAN_NOT_ELIGIBLE or Forbidden)."
+  },
   "globalOptions": {
     "api-key": { "flags": "-k, --api-key <key>", "description": "API key (overrides env/config)" },
     "output": { "flags": "-o, --output <format>", "description": "Output format: table, json, csv", "default": "table" },
@@ -160,6 +164,54 @@
       "description": "Get standard allocation data for a specific token",
       "arguments": { "tokenId": { "required": true, "description": "Token ID" } },
       "example": "tok allocation detail solana --output json"
+    },
+    "pit versions <tokenId>": {
+      "description": "List a token's tokenomics versions on its project timeline (point-in-time)",
+      "arguments": { "tokenId": { "required": true, "description": "Token ID (e.g. arbitrum)" } },
+      "options": {
+        "start": { "flags": "--start <date>", "description": "Keep versions valid from this day (YYYY-MM-DD)" },
+        "end": { "flags": "--end <date>", "description": "Keep versions valid from up to this day (YYYY-MM-DD)" },
+        "page": { "flags": "--page <number>", "description": "Page number" },
+        "page-size": { "flags": "--page-size <number>", "description": "Items per page" }
+      },
+      "example": "tok pit versions arbitrum --output json"
+    },
+    "pit allocation <tokenId>": {
+      "description": "Get a token's allocations as published at a version (point-in-time, no USD fields)",
+      "arguments": { "tokenId": { "required": true, "description": "Token ID" } },
+      "options": {
+        "as-of": { "flags": "--as-of <instant>", "description": "Answer as known at this instant (YYYY-MM-DD or RFC 3339)" },
+        "version-id": { "flags": "--version-id <id>", "description": "Answer from this version (from pit versions)" }
+      },
+      "example": "tok pit allocation arbitrum --as-of 2024-01-01 --output json"
+    },
+    "pit daily-emission <tokenId>": {
+      "description": "Get a token's daily emission (cliff + linear) as published at a version (point-in-time, no USD fields)",
+      "arguments": { "tokenId": { "required": true, "description": "Token ID" } },
+      "options": {
+        "as-of": { "flags": "--as-of <instant>", "description": "Answer as known at this instant (YYYY-MM-DD or RFC 3339)" },
+        "version-id": { "flags": "--version-id <id>", "description": "Answer from this version (from pit versions)" },
+        "start": { "flags": "--start <date>", "description": "Start date (YYYY-MM-DD)" },
+        "end": { "flags": "--end <date>", "description": "End date (YYYY-MM-DD)" },
+        "standard-allocation": { "flags": "--standard-allocation <names>", "description": "Filter by allocation (comma-separated: community, founderTeam, privateInvestors, publicInvestors, others, reserve)" },
+        "page": { "flags": "--page <number>", "description": "Page number" },
+        "page-size": { "flags": "--page-size <number>", "description": "Items per page" }
+      },
+      "example": "tok pit daily-emission arbitrum --as-of 2024-01-01 --start 2024-03-01 --end 2024-03-31"
+    },
+    "pit unlock-events <tokenId>": {
+      "description": "Get a token's cliff unlock events as published at a version (point-in-time, no USD fields)",
+      "arguments": { "tokenId": { "required": true, "description": "Token ID" } },
+      "options": {
+        "as-of": { "flags": "--as-of <instant>", "description": "Answer as known at this instant (YYYY-MM-DD or RFC 3339)" },
+        "version-id": { "flags": "--version-id <id>", "description": "Answer from this version (from pit versions)" },
+        "start": { "flags": "--start <date>", "description": "Start date (YYYY-MM-DD)" },
+        "end": { "flags": "--end <date>", "description": "End date (YYYY-MM-DD)" },
+        "standard-allocation": { "flags": "--standard-allocation <names>", "description": "Filter by allocation (comma-separated: community, founderTeam, privateInvestors, publicInvestors, others, reserve)" },
+        "page": { "flags": "--page <number>", "description": "Page number" },
+        "page-size": { "flags": "--page-size <number>", "description": "Items per page" }
+      },
+      "example": "tok pit unlock-events arbitrum --version-id arbitrum-p-6502a0ab2e1d22b626158232 --output json"
     },
     "auth login": {
       "description": "Store API key",

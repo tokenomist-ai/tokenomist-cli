@@ -65,7 +65,8 @@ tok allocation detail solana --output json
 
 ## Domain Context
 
-- Allocations are **point-in-time analyses**. They reflect the current understanding of token distribution and may be updated as new information becomes available.
+- `tok allocation detail` reflects the **current** understanding of token distribution and may be updated as new information becomes available. To see the allocation as it was published at a past date or version, use `tok pit allocation <id> --as-of <date>` (see the `tokenomist-point-in-time` skill).
+- `totalLockedAmount` is the sum of the Scheduled rows' `allocationLockedAmount`; it can differ slightly from `tok token list`'s token-level figure, which is computed at a different instant.
 - `standardAllocationName` enables cross-project comparison — different projects may use different names for similar allocations (e.g., "Core Contributors" vs "Team"), but the standard name normalizes this.
 - `totalTBDLockedAmount` represents tokens that are known to be locked but have no defined unlock schedule. Their classification may change as the project releases more information.
 

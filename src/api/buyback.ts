@@ -1,4 +1,5 @@
 import type { TokenomistClient } from "./client.js";
+import type { ApiResult } from "../types/response.js";
 import type { BuybackTokenList, BuybackToken } from "../types/buyback.js";
 
 export interface BuybackListParams {
@@ -10,8 +11,8 @@ export interface BuybackListParams {
 export async function listBuybacks(
   client: TokenomistClient,
   params?: BuybackListParams,
-): Promise<BuybackTokenList[]> {
-  return client.get<BuybackTokenList[]>("/v5/buyback/list", params as Record<string, string>);
+): Promise<ApiResult<BuybackTokenList[]>> {
+  return client.getWithMeta<BuybackTokenList[]>("/v5/buyback/list", { ...params });
 }
 
 export async function getBuybackDetail(
@@ -19,8 +20,12 @@ export async function getBuybackDetail(
   tokenId: string,
   params?: { start?: string; end?: string },
 ): Promise<BuybackToken> {
-  return client.get<BuybackToken>(
+  const data = await client.get<BuybackToken>(
     `/v5/buyback/${encodeURIComponent(tokenId)}`,
     params as Record<string, string>,
   );
+  // The API sends a null value when no event matched the range; zero events
+  // are worth zero (as the MCP server reports it).
+  if (!data.buybacks?.length && data.totalBuybackValue == null) data.totalBuybackValue = 0;
+  return data;
 }

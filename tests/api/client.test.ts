@@ -32,7 +32,7 @@ describe("TokenomistClient", () => {
 
     await client.get("/v1/test", { foo: "bar" });
 
-    expect(mockFetch).toHaveBeenCalledWith("https://api.test.com/v1/test?foo=bar", {
+    expect(mockFetch).toHaveBeenCalledWith("https://api.test.com/v1/test?foo=bar&showError=true", {
       headers: {
         "x-api-key": "test-api-key",
         "x-client-source": "cli",
@@ -49,7 +49,7 @@ describe("TokenomistClient", () => {
     await client.get("/v1/test", { foo: "bar", empty: "" });
 
     const calledUrl = mockFetch.mock.calls[0][0] as string;
-    expect(calledUrl).toBe("https://api.test.com/v1/test?foo=bar");
+    expect(calledUrl).toBe("https://api.test.com/v1/test?foo=bar&showError=true");
   });
 
   it("returns data on success", async () => {
@@ -114,6 +114,76 @@ describe("TokenomistClient", () => {
     } catch (err) {
       expect(err).toBeInstanceOf(ApiError);
       expect((err as ApiError).code).toBe(ErrorCode.NETWORK_ERROR);
+    }
+  });
+  it("skips undefined params", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ status: true, data: [] }),
+    });
+
+    await client.get("/v1/test", { foo: undefined, bar: "1" });
+
+    const calledUrl = mockFetch.mock.calls[0][0] as string;
+    expect(calledUrl).toBe("https://api.test.com/v1/test?bar=1&showError=true");
+  });
+
+  it("getWithMeta returns data with pagination metadata", async () => {
+    const metadata = {
+      queryDate: "2026-11-04T00:00:00Z",
+      page: 1,
+      totalPages: 14,
+      pageSize: 2,
+      total: 28,
+    };
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ metadata, status: true, data: [{ id: 1 }] }),
+    });
+
+    const result = await client.getWithMeta("/v5/burn/list");
+    expect(result.data).toEqual([{ id: 1 }]);
+    expect(result.metadata).toEqual(metadata);
+  });
+
+  it("turns a null page into an empty array", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        metadata: { page: 1, totalPages: 1, pageSize: 20 },
+        status: true,
+        data: null,
+      }),
+    });
+
+    const result = await client.getWithMeta("/v5/unlock/events/list");
+    expect(result.data).toEqual([]);
+  });
+
+  it("carries point-in-time errorCode and earliestValidDate", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      headers: { get: () => null },
+      json: async () => ({
+        status: false,
+        statusCode: 404,
+        errorCode: "NO_VERSION_AT_AS_OF",
+        errorMessage: "No version at asOf",
+        errorDetail:
+          "arbitrum has no version at 2020-01-01. The first starts at 2023-03-16T13:08:18Z",
+        earliestValidDate: "2023-03-16T13:08:18Z",
+      }),
+    });
+
+    try {
+      await client.get("/v5/point-in-time/allocations/arbitrum", { asOf: "2020-01-01" });
+      expect.fail("Should have thrown");
+    } catch (err) {
+      const apiErr = err as ApiError;
+      expect(apiErr.code).toBe(ErrorCode.NOT_FOUND);
+      expect(apiErr.errorCode).toBe("NO_VERSION_AT_AS_OF");
+      expect(apiErr.earliestValidDate).toBe("2023-03-16T13:08:18Z");
     }
   });
 });

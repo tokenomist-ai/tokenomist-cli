@@ -4,6 +4,8 @@ import { listInvestors, getInvestorDetail } from "../api/investor.js";
 import { output } from "../output/formatter.js";
 import type { Column } from "../output/table.js";
 import { resolveConfig } from "../config/config.js";
+import { printPaginationHint } from "../output/pagination.js";
+import { validateDateRange } from "./validate.js";
 
 const listColumns: Column[] = [
   { key: "investorId", header: "ID" },
@@ -39,7 +41,11 @@ investorCommand
     const client = new TokenomistClient(config.apiKey, config.baseUrl, {
       noCache: config.noCache,
     });
-    const data = await listInvestors(client, {
+    validateDateRange(opts.startLatestFundingDate, opts.endLatestFundingDate, [
+      "--start-latest-funding-date",
+      "--end-latest-funding-date",
+    ]);
+    const { data, metadata } = await listInvestors(client, {
       startLatestFundingDate: opts.startLatestFundingDate,
       endLatestFundingDate: opts.endLatestFundingDate,
       page: opts.page,
@@ -47,9 +53,11 @@ investorCommand
     });
     const rows = data.map((d) => ({
       ...d,
-      roundCount: d.fundingRounds?.length || 0,
+      // The list omits fundingRounds in production; null renders as "—", not a misleading 0.
+      roundCount: d.fundingRounds ? d.fundingRounds.length : null,
     }));
     output(rows as unknown as Record<string, unknown>[], listColumns, globalOpts.output || "table");
+    printPaginationHint(metadata);
   });
 
 investorCommand

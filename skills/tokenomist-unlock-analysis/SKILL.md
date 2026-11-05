@@ -91,6 +91,10 @@ Options:
 tok unlock events solana --start 2025-01-01 --end 2025-12-31 --output json
 ```
 
+## Pagination
+
+List and series commands return one page (20 rows by default). The page position is printed to **stderr** — e.g. `Page 1/3 · 56 total · next: --page 2` — while stdout stays the JSON/CSV data. To get everything, raise `--page-size` or call again with `--page <n>` until the page equals the total pages. A page past the last returns the last page again, so never stop on "unchanged" data.
+
 ## Key output fields
 
 **unlock list / upcoming:**

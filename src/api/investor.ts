@@ -1,4 +1,5 @@
 import type { TokenomistClient } from "./client.js";
+import type { ApiResult } from "../types/response.js";
 import type { FundraisingInvestors, FundraisingInvestorsAggregated } from "../types/investor.js";
 
 export interface InvestorListParams {
@@ -11,8 +12,8 @@ export interface InvestorListParams {
 export async function listInvestors(
   client: TokenomistClient,
   params?: InvestorListParams,
-): Promise<FundraisingInvestors[]> {
-  return client.get<FundraisingInvestors[]>(
+): Promise<ApiResult<FundraisingInvestors[]>> {
+  return client.getWithMeta<FundraisingInvestors[]>(
     "/v5/fundraising/investors/list",
     params as Record<string, string>,
   );
