@@ -16,6 +16,8 @@ Thanks for your interest in contributing!
 
 ## Development
 
+Development needs Node.js 20.19+, 22.13+ or 24+ (the test and lint tooling no longer supports Node 18). The published CLI still runs on Node 18+.
+
 ```bash
 npm run build     # Build the CLI
 npm run dev       # Build with watch mode
