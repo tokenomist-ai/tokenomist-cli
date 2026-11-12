@@ -1,6 +1,6 @@
 {
   "name": "tok",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "CLI tool for the Tokenomist API",
   "notes": {
     "pagination": "Paginated commands (unlock list/upcoming/events, emission daily/weekly, investor list, burn list, buyback list, pit versions/daily-emission/unlock-events) return one page (default 20 rows). The page position is printed to stderr as 'Page <page>/<totalPages> · <total> total'; stdout stays the data only. A page past the last returns the last page again. pit commands with --output json include it as a 'pagination' object.",

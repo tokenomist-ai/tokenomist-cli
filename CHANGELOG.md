@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.1
+
+Maintenance release. CLI behaviour and runtime dependencies are unchanged.
+
+### Security
+
+- Updated development dependencies to resolve 17 of 18 `npm audit` findings: `vitest` 4.1.12 (which no longer depends on `tinypool`) and patched transitive packages including `vite`, `postcss`, `nanoid`, `brace-expansion`, `js-yaml`, `minimatch` and `source-map-js`. None of these ship in the published package.
+- One low-severity finding remains in `esbuild` (GHSA-g7r4-m6w7-qqqr). It affects only esbuild's development server on Windows, which this project does not use.
+
+### Changed
+
+- Development and CI now need Node.js 20.19+, 22.13+ or 24+ (CI runs Node 20, 22 and 24). The published CLI still runs on Node 18+.
+
 ## 0.2.0
 
 ### Added

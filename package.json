@@ -1,6 +1,6 @@
 {
   "name": "@tokenomist-ai/tokenomist-cli",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "CLI tool for the Tokenomist API — query token unlocks, emissions, fundraising, burns, buybacks, and point-in-time history from the terminal",
   "type": "module",
   "main": "dist/index.js",
@@ -71,6 +71,11 @@
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.57.0",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.12"
+  },
+  "overrides": {
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "^11.0.1"
+    }
   }
 }
